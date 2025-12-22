@@ -8,117 +8,127 @@
     <meta charset="UTF-8">
     <title>Quản lý sản phẩm - YaMe Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-
     <link rel="stylesheet" href="${pageContext.request.contextPath}/Frontend-master/admin/css/style.css">
+    <style>
+        .image-preview-container {
+            width: 100%;
+            min-height: 140px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8fafc;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        #imagePreview {
+            max-width: 100%;
+            max-height: 180px;
+            display: none;
+        }
+        .preview-text { color: #a0aec0; font-size: 0.85rem; }
+        .table thead { background-color: #f8f9fa; }
+        .badge-stock { font-size: 0.9rem; padding: 0.5em 0.7em; }
+    </style>
 </head>
 
 <body>
-
-<div class="sidebar">
+ <div class="sidebar">
     <a href="${pageContext.request.contextPath}/admin/dashboard" class="sidebar-brand">
         <i class="bi bi-shield-check text-warning"></i> YaMe Admin
     </a>
 
-    <ul class="sidebar-menu">
-        <li class="menu-header">Tổng quan</li>
-        <li><a href="${pageContext.request.contextPath}/admin/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+      <ul class="sidebar-menu">
+    <li class="menu-header">Tổng quan</li>
+    <li><a href="${pageContext.request.contextPath}/admin/dashboards"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
 
-        <li class="menu-header">Bán hàng</li>
-        <li>
-            <a class="active" href="${pageContext.request.contextPath}/admin/product">
-                <i class="bi bi-box-seam"></i> Quản lý Sản phẩm
-            </a>
-        </li>
-        <li><a href="${pageContext.request.contextPath}/admin/order-list.html"><i class="bi bi-cart3"></i> Quản lý Đơn hàng</a></li>
-        <li><a href="${pageContext.request.contextPath}/admin/promotion-list.html"><i class="bi bi-tags"></i> Quản lý Khuyến mãi</a></li>
-        
-        <li><a href="${pageContext.request.contextPath}/admin/customer-list.html"><i class="bi bi-people"></i> Khách hàng</a></li>
-        
-        <li class="menu-header">Quản trị</li>
-        <li><a href="${pageContext.request.contextPath}/admin/employee-list.html"><i class="bi bi-person-badge"></i> Quản lý Nhân viên</a></li>
-        <li><a href="${pageContext.request.contextPath}/admin/payment.html"><i class="bi bi-credit-card"></i> Hệ thống Thanh toán</a></li>
-        
-        <li class="menu-header">Hệ thống</li>
-        <li><a href="${pageContext.request.contextPath}/index.jsp">
-            <i class="bi bi-box-arrow-right"></i> Xem Trang chủ
-        </a></li>
-    </ul>
+    <li class="menu-header">Bán hàng</li>
+    <li><a href="${pageContext.request.contextPath}/admin/product"><i class="bi bi-box-seam"></i> Quản lý Sản phẩm</a></li>
+    
+    <li><a href="${pageContext.request.contextPath}/admin/orders"><i class="bi bi-cart3"></i> Quản lý Đơn hàng</a></li>
+    
+    <li><a href="${pageContext.request.contextPath}/admin/promotion"><i class="bi bi-tags"></i> Quản lý Khuyến mãi</a></li>
+    <li><a href="${pageContext.request.contextPath}/admin/customers"><i class="bi bi-people"></i> Khách hàng</a></li>
+    
+    <li class="menu-header">Quản trị</li>
+    <li><a href="${pageContext.request.contextPath}/admin/employees"><i class="bi bi-person-badge"></i> Quản lý Nhân viên</a></li>
+    
+    <li class="menu-header">Hệ thống</li>
+    <li><a href="${pageContext.request.contextPath}/index.jsp"><i class="bi bi-box-arrow-right"></i> Xem Trang chủ</a></li>
+</ul>
 </div>
 
-<div class="main-content">
+    <div class="main-content" id="mainContent">
 
-    <div class="top-navbar sticky-top">
-        <div class="d-flex align-items-center">
-            <h5 class="mb-0 ms-3">Sản phẩm</h5>
-        </div>
-        
-        <div class="dropdown me-4">
-            <a href="#" class="text-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-                <img src="https://ui-avatars.com/api/?name=Admin+YaMe&background=0D8ABC&color=fff"
-                     class="rounded-circle" width="35">
-                <span class="ms-2 small fw-bold">Admin</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="#">Hồ sơ</a></li>
-                <li><a class="dropdown-item text-danger" href="#">Đăng xuất</a></li>
-            </ul>
-        </div>
-    </div>
-    
-	
-    <div class="container-fluid p-4">
-    
-        <div class="card border-0 shadow-sm mb-4 filter-bar">
-            <div class="card-body p-3">
-                <div class="row g-3">
-                    
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control border-start-0 ps-0"
-                                   placeholder="Tìm theo tên, mã sản phẩm..."
-                                   name="searchKeyword">
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <select class="form-select" name="filterCategory">
-                            <option value="" selected>-- Tất cả danh mục --</option>
-                            <option value="1">Áo Thun</option>
-                            <option value="2">Áo Khoác</option>
-                            <option value="3">Quần Jean</option>
-                            <option value="4">Phụ Kiện</option>
-                             </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <select class="form-select" name="filterStatus">
-                            <option value="" selected>-- Trạng thái --</option>
-                            <option value="1">Đang bán</option>
-                            <option value="2">Hết hàng</option>
-                            <option value="0">Ngừng kinh doanh</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2 text-end">
-                        <button id="btnAdd" class="btn btn-dark w-100 fw-bold"
-                                data-bs-toggle="modal"
-                                data-bs-target="#productModal">
-                            <i class="bi bi-plus-lg me-1"></i> Thêm mới
-                        </button>
-                    </div>
+        <div class="top-navbar sticky-top">
+            <div class="d-flex align-items-center">
+                <button class="btn border-0" id="menu-toggle"><i class="bi bi-list fs-4"></i></button>
+                <h5 class="mb-0 ms-3">Sản phẩm</h5>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="dropdown me-4">
+                    <a href="#" class="text-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=Admin+YaMe&background=0D8ABC&color=fff" alt="Admin"
+                            class="rounded-circle" width="35">
+                        <span class="ms-2 small fw-bold">Admin</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="profile.html">Hồ sơ</a></li>
+                        <li><a class="dropdown-item text-danger" href="#">Đăng xuất</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
+    
+    <div class="container-fluid p-4">
+        <div class="card border-0 shadow-sm mb-4 filter-bar">
+            <div class="card-body p-3">
+                <form method="get" action="product">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="small fw-bold mb-1">Từ khóa</label>
+                            <input type="text" class="form-control" placeholder="Tìm tên..." name="keyword" value="${param.keyword}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="small fw-bold mb-1">Danh mục</label>
+                            <select class="form-select" name="category">
+                                <option value="">Tất cả</option>
+                                <option value="1" ${param.category == '1' ? 'selected' : ''}>Áo Thun</option>
+                                <option value="2" ${param.category == '2' ? 'selected' : ''}>Áo Khoác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="small fw-bold mb-1">Trạng thái</label>
+                            <select class="form-select" name="status">
+                                <option value="">Tất cả</option>
+                                <option value="1" ${param.status == '1' ? 'selected' : ''}>Đang bán</option>
+                                <option value="0" ${param.status == '0' ? 'selected' : ''}>Ẩn</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-dark fw-bold w-50">
+                                    <i class="bi bi-funnel"></i> Lọc dữ liệu
+                                </button>
+                                <button type="button" class="btn btn-primary fw-bold w-50 text-white" onclick="showAddForm()">
+                                    <i class="bi bi-plus-lg"></i> Thêm sản phẩm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div class="card shadow-sm">
             <div class="card-body p-0">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+                    <thead>
                         <tr>
-                            <th class="ps-4" style="width: 40%;">Tên sản phẩm</th>
+                            <th class="ps-4">Sản phẩm</th>
                             <th>Danh mục</th>
                             <th>Giá bán</th>
                             <th>Tồn kho</th>
@@ -127,212 +137,163 @@
                         </tr>
                     </thead>
                     <tbody>
-
-                    <c:forEach var="sp" items="${products}">
-                        <tr>
-                            <td class="ps-4">
-                                <div class="d-flex align-items-center">
-                                    <img src="${pageContext.request.contextPath}/Frontend-master/img/${sp.anhDaiDien}"
-                                         style="width:50px;height:50px;object-fit:cover"
-                                         onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/Frontend-master/img/default.png';"
-                                         class="me-3 rounded">
-                                    <div>
-                                        <div class="fw-bold">${sp.tenSanPham}</div>
-                                        <small class="text-muted">Mã: ${sp.maSanPham}</small>
+                        <c:forEach var="sp" items="${products}">
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <img src="${pageContext.request.contextPath}/Frontend-master/img/${sp.anhDaiDien}" 
+                                             style="width:45px;height:45px;object-fit:cover" onerror="this.src='https://placehold.co/50x50?text=No+Img'" class="me-3 rounded border">
+                                        <div><div class="fw-bold">${sp.tenSanPham}</div><small class="text-muted">ID: ${sp.maSanPham}</small></div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>${sp.maDanhMuc}</td>
-                            <td>
-                                <fmt:formatNumber value="${sp.giaGoc}" type="currency" currencySymbol="VNĐ" maxFractionDigits="0"/>
-                            </td>
-                            <td>${sp.tongSoLuongTon}</td>
-                            <td>
-                                <c:choose>
-                                    <c:when test="${sp.trangThai == 1}">
-                                        <span class="badge text-bg-success">Đang bán</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="badge text-bg-secondary">Ẩn</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </td>
-                            <td class="text-end pe-4">
-                                <button class="btn btn-sm btn-light border btn-edit-product"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#productModal"
-                                        data-id="${sp.maSanPham}">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                
-                                <form action="${pageContext.request.contextPath}/admin/product" method="post" style="display:inline-block;">
-                                    <input type="hidden" name="action" value="delete"/>
-                                    <input type="hidden" name="maSanPham" value="${sp.maSanPham}"/>
-                                    <button type="submit" class="btn btn-sm btn-light border text-danger"
-                                            onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm ${sp.maSanPham} không? Hành động này không thể hoàn tác.')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    </c:forEach>
-
+                                </td>
+                                <td>${sp.maDanhMuc}</td>
+                                <td class="fw-bold"><fmt:formatNumber value="${sp.giaGoc}" type="currency" currencySymbol="đ"/></td>
+                                <td>
+                                    <span class="badge rounded-pill bg-light text-dark border badge-stock">
+                                        ${sp.tongSoLuongTon}
+                                    </span>
+                                </td>
+                                <td><span class="badge ${sp.trangThai == 1 ? 'text-bg-success' : 'text-bg-secondary'}">${sp.trangThai == 1 ? 'Đang bán' : 'Ẩn'}</span></td>
+                                <td class="text-end pe-4">
+                                    <a href="product?action=prepareEdit&id=${sp.maSanPham}" class="btn btn-sm btn-light border text-primary"><i class="bi bi-pencil-square"></i></a>
+                                    <form action="product" method="post" style="display:inline-block;">
+                                        <input type="hidden" name="action" value="delete"><input type="hidden" name="maSanPham" value="${sp.maSanPham}">
+                                        <button type="submit" class="btn btn-sm btn-light border text-danger" onclick="return confirm('Bạn chắc chắn muốn xóa sản phẩm này?')"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </c:forEach>
                     </tbody>
                 </table>
-                
-                <c:if test="${empty products}">
-                     <div class="p-4 text-center text-muted">Chưa có sản phẩm nào được thêm vào.</div>
-                </c:if>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="productModal">
+<div class="modal fade" id="productModal" data-bs-backdrop="static" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-
-            <form id="productForm" method="post"
-                  enctype="multipart/form-data"
-                  action="${pageContext.request.contextPath}/admin/product">
-
+        <div class="modal-content border-0 shadow-lg">
+            <form id="productForm" method="post" enctype="multipart/form-data" action="product">
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="modalTitle">Thêm sản phẩm</h5>
-                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="modalTitle">${editProduct != null ? "Chỉnh sửa sản phẩm" : "Thêm mới sản phẩm"}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeAndRefresh()"></button>
                 </div>
-
                 <div class="modal-body">
-                    <input type="hidden" name="action" id="modalAction" value="add">
-                    <input type="hidden" name="maSanPham" id="modalMaSanPham">
-
-                    <c:if test="${not empty errorMessage}">
-                        <div class="alert alert-danger">${errorMessage}</div>
-                    </c:if>
-
-                    <div class="mb-3">
-                        <label class="fw-bold">Tên sản phẩm</label>
-                        <input name="tenSanPham" id="modalTenSanPham" class="form-control" required>
+                    <input type="hidden" name="action" id="modalAction" value="${editProduct != null ? 'edit' : 'add'}">
+                    <input type="hidden" name="maSanPham" id="modalMaSanPham" value="${editProduct.maSanPham}">
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="fw-bold mb-1">Tên sản phẩm</label>
+                            <input name="tenSanPham" id="modalTen" class="form-control" value="${editProduct.tenSanPham}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="fw-bold mb-1">Danh mục</label>
+                            <input name="maDanhMuc" id="modalDM" type="number" class="form-control" value="${editProduct.maDanhMuc}" required>
+                        </div>
                     </div>
-
+                    
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="fw-bold">Danh mục</label>
-                            <input name="maDanhMuc" id="modalMaDanhMuc" class="form-control" required>
+                            <label class="fw-bold mb-1">Giá bán (đ)</label>
+                            <input name="giaGoc" id="modalGia" type="number" class="form-control" value="${editProduct.giaGoc}" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="fw-bold">Giá bán</label>
-                            <input name="giaGoc" type="number" id="modalGiaGoc" class="form-control" min="0" required>
+                            <label class="fw-bold mb-1">Số lượng tồn kho</label>
+                            <input name="tongSoLuongTon" id="modalTonKho" type="number" class="form-control" value="${editProduct.tongSoLuongTon != null ? editProduct.tongSoLuongTon : 0}" required>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="fw-bold">Mô tả</label>
-                        <textarea name="moTa" id="modalMoTa" class="form-control" rows="3"></textarea>
+                        <label class="fw-bold mb-1">Mô tả sản phẩm</label>
+                        <textarea name="moTa" id="modalMoTa" class="form-control" rows="3" placeholder="Nhập mô tả chi tiết...">${editProduct.moTa}</textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="fw-bold">Ảnh đại diện</label>
-                        <input type="file" name="file" id="modalFile" class="form-control">
-                        <img id="previewImg" src="#" style="max-height: 100px; margin-top: 10px; display:none;">
+                        <label class="fw-bold mb-1">Ảnh đại diện</label>
+                        <input type="file" name="file" id="imageInput" class="form-control" accept="image/*">
+                        <div class="image-preview-container">
+                            <span class="preview-text" id="previewText">Chưa có ảnh nào được chọn</span>
+                            <img id="imagePreview" src="${not empty editProduct.anhDaiDien ? pageContext.request.contextPath.concat('/Frontend-master/img/').concat(editProduct.anhDaiDien) : ''}" 
+                                 style="${not empty editProduct.anhDaiDien ? 'display:block' : 'display:none'}">
+                        </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="fw-bold">Trạng thái</label>
+                        <label class="fw-bold mb-1">Trạng thái kinh doanh</label>
                         <select name="trangThai" id="modalTrangThai" class="form-select">
-                            <option value="1">Đang bán</option>
-                            <option value="0">Ẩn</option>
+                            <option value="1" ${editProduct.trangThai == 1 ? 'selected' : ''}>Đang bán</option>
+                            <option value="0" ${editProduct.trangThai == 0 ? 'selected' : ''}>Ẩn / Ngừng bán</option>
                         </select>
                     </div>
                 </div>
-
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-dark">Lưu</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeAndRefresh()">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-dark px-4">Lưu dữ liệu</button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const productModal = new bootstrap.Modal(document.getElementById('productModal'));
-        const modalTitle = document.getElementById('modalTitle');
-        const modalForm = document.getElementById('productForm');
-        
-        // Hàm reset form
-        function resetModal() {
-            modalTitle.innerText = 'Thêm sản phẩm';
-            modalForm.reset();
-            document.getElementById('modalAction').value = 'add';
-            document.getElementById('modalMaSanPham').value = '';
-            document.getElementById('previewImg').style.display = 'none';
-        }
+    const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewText = document.getElementById('previewText');
 
-        // --- 1. XỬ LÝ KHI NHẤN NÚT "THÊM MỚI" ---
-        document.getElementById('btnAdd').addEventListener('click', resetModal); // Sử dụng ID btnAdd
-        
-        // Bắt sự kiện khi Modal đóng để reset form
-        document.getElementById('productModal').addEventListener('hidden.bs.modal', resetModal);
-
-        // Xử lý nút EDIT (Dùng AJAX để lấy dữ liệu)
-        document.querySelectorAll('.btn-edit-product').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                
-                // ĐƯỜNG DẪN API TRẢ VỀ JSON ĐÃ ĐƯỢC ÁNH XẠ ĐÚNG
-                fetch('${pageContext.request.contextPath}/admin/product?action=getJson&id=' + id) 
-                    .then(response => response.json())
-                    .then(sp => {
-                        modalTitle.innerText = 'Sửa sản phẩm';
-                        document.getElementById('modalAction').value = 'edit';
-                        
-                        // Đổ dữ liệu vào form
-                        document.getElementById('modalMaSanPham').value = sp.maSanPham;
-                        document.getElementById('modalTenSanPham').value = sp.tenSanPham;
-                        document.getElementById('modalMaDanhMuc').value = sp.maDanhMuc;
-                        document.getElementById('modalGiaGoc').value = sp.giaGoc;
-                        document.getElementById('modalMoTa').value = sp.moTa;
-                        document.getElementById('modalTrangThai').value = sp.trangThai;
-                        
-                        // Hiển thị ảnh cũ (ĐƯỜNG DẪN ẢNH ĐÃ ĐƯỢC ÁNH XẠ ĐÚNG)
-                        const imgSrc = `${pageContext.request.contextPath}/Frontend-master/img/${sp.anhDaiDien}`;
-                        const preview = document.getElementById('previewImg');
-                        preview.src = imgSrc;
-                        preview.style.display = 'block';
-
-                        productModal.show();
-                    })
-                    .catch(error => console.error('Lỗi khi lấy dữ liệu sản phẩm:', error));
-            });
-        });
-        
-        // --- XỬ LÝ TỰ ĐỘNG MỞ MODAL KHI CÓ LỖI (Dùng JSTL) ---
-        <c:if test="${editProduct != null || not empty errorMessage}">
-            // Đổ lại dữ liệu cũ vào Modal khi có lỗi xác thực từ Server
-            document.getElementById('modalTitle').innerText = '${editProduct != null ? "Sửa sản phẩm" : "Thêm sản phẩm"}';
-            document.getElementById('modalAction').value = '${editProduct != null ? "edit" : "add"}';
-            document.getElementById('modalMaSanPham').value = '${editProduct.maSanPham}';
-            document.getElementById('modalTenSanPham').value = '${editProduct.tenSanPham}';
-            document.getElementById('modalMaDanhMuc').value = '${editProduct.maDanhMuc}';
-            document.getElementById('modalGiaGoc').value = '${editProduct.giaGoc}';
-            document.getElementById('modalMoTa').value = '${editProduct.moTa}';
-            document.getElementById('modalTrangThai').value = '${editProduct.trangThai}';
-            
-            // Đường dẫn ảnh cũ khi lỗi (ĐÃ ĐƯỢC ÁNH XẠ ĐÚNG)
-            const currentImg = '${editProduct.anhDaiDien}';
-            if(currentImg) {
-                 document.getElementById('previewImg').src = '${pageContext.request.contextPath}/Frontend-master/img/' + currentImg;
-                 document.getElementById('previewImg').style.display = 'block';
+    // Logic xem trước ảnh cực nhanh
+    imageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                previewText.style.display = 'none';
             }
+            reader.readAsDataURL(file);
+        }
+    });
 
+    // Mở form Thêm mới (Reset toàn bộ)
+    function showAddForm() {
+        document.getElementById('productForm').reset();
+        document.getElementById('modalTitle').innerText = "Thêm mới sản phẩm";
+        document.getElementById('modalAction').value = "add";
+        document.getElementById('modalMaSanPham').value = "";
+        document.getElementById('modalMoTa').value = "";
+        document.getElementById('modalTonKho').value = "0"; 
+        imagePreview.style.display = 'none';
+        imagePreview.src = "";
+        previewText.style.display = 'block';
+        productModal.show();
+    }
+
+    // Đóng và làm sạch URL
+    function closeAndRefresh() {
+        window.location.href = 'product';
+    }
+
+    // Tự động bật Modal nếu Servlet yêu cầu sửa (Edit)
+    document.addEventListener('DOMContentLoaded', function () {
+        <c:if test="${shouldOpenModal == true}">
+            if (imagePreview.getAttribute('src') !== "" && imagePreview.getAttribute('src') !== null) {
+                imagePreview.style.display = 'block';
+                previewText.style.display = 'none';
+            }
             productModal.show();
         </c:if>
+        
+        // Menu toggle cho sidebar
+        const menuToggle = document.getElementById('menu-toggle');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('active');
+            });
+        }
     });
 </script>
-
 </body>
 </html>
