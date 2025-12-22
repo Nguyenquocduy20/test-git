@@ -69,8 +69,7 @@
                         <span class="ms-2 small fw-bold">Admin</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="profile.html">Hồ sơ</a></li>
-                        <li><a class="dropdown-item text-danger" href="#">Đăng xuất</a></li>
+<a href="${pageContext.request.contextPath}/admin?action=profile">Hồ sơ cá nhân</a>                      <li><a class="dropdown-item text-danger" href="#">Đăng xuất</a></li>
                     </ul>
                 </div>
             </div>

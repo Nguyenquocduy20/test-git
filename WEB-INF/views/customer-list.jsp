@@ -40,6 +40,9 @@
     
     <li class="menu-header">Quản trị</li>
     <li><a href="${pageContext.request.contextPath}/admin/employees"><i class="bi bi-person-badge"></i> Quản lý Nhân viên</a></li>
+    <li>
+    
+</li>
     
     <li class="menu-header">Hệ thống</li>
     <li><a href="${pageContext.request.contextPath}/index.jsp"><i class="bi bi-box-arrow-right"></i> Xem Trang chủ</a></li>
