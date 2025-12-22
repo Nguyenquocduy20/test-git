@@ -25,15 +25,34 @@ public class AdminServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.setContentType("text/html;charset=UTF-8");
-	    request.setCharacterEncoding("UTF-8");
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Thiết lập tiếng Việt
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
 
-	    // 2. Chuyển hướng (Forward) sang file index.jsp (nơi chứa 600 dòng code của bạn)
-	    // Giả sử file index.jsp nằm trong thư mục WebContent hoặc webapp
-	    request.getRequestDispatcher("/WEB-INF/views/index.jsp").forward(request, response);
-	}
+        // Lấy tham số 'action' từ URL
+        String action = request.getParameter("action");
+
+        if (action == null) {
+            action = "dashboard"; // Mặc định vào dashboard nếu không có tham số
+        }
+
+        switch (action) {
+            case "profile":
+                // Forward sang trang profile.jsp (Giả sử file nằm trong WebContent/admin/profile.jsp)
+                request.getRequestDispatcher("/WEB-INF/views/profile.jsp").forward(request, response);
+                break;
+                
+            case "dashboard":
+                // Forward sang trang index.jsp (hoặc trang dashboard chính của bạn)
+                request.getRequestDispatcher("/WEB-INF/views/index.jsp").forward(request, response);
+                break;
+
+            default:
+                request.getRequestDispatcher("/WEB-INF/views/index.jsp").forward(request, response);
+                break;
+        }
+    }
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
