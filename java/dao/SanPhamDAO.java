@@ -4,112 +4,106 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.TypedQuery;
 import java.util.List;
-import java.util.ArrayList;
-
 import model.SanPham;
 import model.ChiTietSanPham;
-import dto.SanPhamDTO;
-import util.HypernateUtil; // Giữ nguyên tên lớp tiện ích bạn cung cấp
+import util.HypernateUtil;
 
 public class SanPhamDAO {
 
-    // Khởi tạo ChiTietSanPhamDAO để tính Tổng số lượng tồn
-    private ChiTietSanPhamDAO ctDao = new ChiTietSanPhamDAO();
-
     /**
-     * Chuyển đổi đối tượng SanPham (Entity) sang SanPhamDTO (DTO)
-     * Thêm logic tính tổng số lượng tồn và xử lý ảnh đại diện mặc định.
-     * Đổi tên hàm từ 'toDTO' thành 'convertToDTO' để thống nhất với Servlet.
-     * @param sp Đối tượng SanPham
-     * @return Đối tượng SanPhamDTO đã được ánh xạ
+     * Tính toán tổng số lượng tồn của một sản phẩm
+     * (Hàm nội bộ dùng để cập nhật giá trị Transient cho Entity)
      */
-    public SanPhamDTO convertToDTO(SanPham sp) {
-        if (sp == null) {
-            return null;
+    private void setInventory(SanPham sp, EntityManager em) {
+        if (sp == null) return;
+        try {
+            TypedQuery<Long> query = em.createQuery(
+                "SELECT SUM(ct.soLuongTon) FROM ChiTietSanPham ct WHERE ct.maSanPham = :maSP", Long.class);
+            query.setParameter("maSP", sp.getMaSanPham());
+            Long tong = query.getSingleResult();
+            sp.setTongSoLuongTon(tong != null ? tong.intValue() : 0);
+        } catch (Exception e) {
+            sp.setTongSoLuongTon(0);
         }
-
-        SanPhamDTO dto = new SanPhamDTO();
-        
-        // --- Ánh xạ các trường từ Entity sang DTO ---
-        dto.setMaSanPham(sp.getMaSanPham());
-        dto.setTenSanPham(sp.getTenSanPham());
-        dto.setMaDanhMuc(sp.getMaDanhMuc());
-        dto.setGiaGoc(sp.getGiaGoc());
-        dto.setMoTa(sp.getMoTa());
-        dto.setChatLieu(sp.getChatLieu());
-        // Đảm bảo ảnh đại diện luôn có giá trị (default.png)
-        dto.setAnhDaiDien(sp.getAnhDaiDien() != null && !sp.getAnhDaiDien().isEmpty() ? sp.getAnhDaiDien() : "default.png");
-        dto.setTrangThai(sp.getTrangThai());
-        dto.setNgayTao(sp.getNgayTao());
-
-        // --- Logic tính toán Tổng Số Lượng Tồn ---
-        // Sử dụng ChiTietSanPhamDAO để lấy danh sách chi tiết và tính tổng
-        List<ChiTietSanPham> listCT = ctDao.getBySanPham(sp.getMaSanPham());
-        int tong = 0;
-        if (listCT != null) {
-            tong = listCT.stream()
-                        .mapToInt(ChiTietSanPham::getSoLuongTon)
-                        .sum();
-        }
-        dto.setTongSoLuongTon(tong);
-        
-        return dto;
     }
 
     /**
-     * Lấy tất cả sản phẩm từ DB và chuyển đổi sang DTO
-     * @return Danh sách SanPhamDTO
+     * Lấy tất cả sản phẩm
      */
-    public List<SanPhamDTO> getAll() {
+    public List<SanPham> getAll() {
         EntityManager em = HypernateUtil.getEntityManager();
-        List<SanPhamDTO> listDTO = new ArrayList<>();
         try {
-            // Sử dụng TypedQuery để chuẩn hóa
-            TypedQuery<SanPham> query = em.createQuery("SELECT s FROM SanPham s", SanPham.class);
-            List<SanPham> listSP = query.getResultList();
-
-            for (SanPham sp : listSP) {
-                listDTO.add(convertToDTO(sp));
+            TypedQuery<SanPham> query = em.createQuery("SELECT s FROM SanPham s ORDER BY s.maSanPham DESC", SanPham.class);
+            List<SanPham> list = query.getResultList();
+            // Tính tồn kho cho từng sản phẩm
+            for (SanPham sp : list) {
+                setInventory(sp, em);
             }
-            return listDTO;
+            return list;
         } finally {
             em.close();
         }
     }
 
     /**
-     * Lấy SanPham theo ID (dùng cho Servlet/Logic nghiệp vụ)
-     * @param id Mã sản phẩm
-     * @return Đối tượng SanPham Entity
+     * Tìm kiếm và lọc sản phẩm
+     */
+    public List<SanPham> searchAndFilter(String keyword, Long categoryId, Integer status) {
+        EntityManager em = HypernateUtil.getEntityManager();
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT s FROM SanPham s WHERE 1=1");
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                jpql.append(" AND LOWER(s.tenSanPham) LIKE :keyword");
+            }
+            if (categoryId != null) {
+                jpql.append(" AND s.maDanhMuc = :categoryId");
+            }
+            if (status != null) {
+                jpql.append(" AND s.trangThai = :status");
+            }
+            jpql.append(" ORDER BY s.maSanPham DESC");
+
+            TypedQuery<SanPham> query = em.createQuery(jpql.toString(), SanPham.class);
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                query.setParameter("keyword", "%" + keyword.toLowerCase() + "%");
+            }
+            if (categoryId != null) {
+                query.setParameter("categoryId", categoryId);
+            }
+            if (status != null) {
+                query.setParameter("status", status);
+            }
+
+            List<SanPham> list = query.getResultList();
+            for (SanPham sp : list) {
+                setInventory(sp, em);
+            }
+            return list;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy SanPham theo ID (Có kèm tồn kho)
      */
     public SanPham getById(Long id) {
         EntityManager em = HypernateUtil.getEntityManager();
         try {
-            return em.find(SanPham.class, id);
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy SanPham theo ID và chuyển đổi sang DTO (dùng cho hiển thị)
-     * @param id Mã sản phẩm
-     * @return Đối tượng SanPhamDTO
-     */
-    public SanPhamDTO getByIdDTO(Long id) {
-        EntityManager em = HypernateUtil.getEntityManager();
-        try {
             SanPham sp = em.find(SanPham.class, id);
-            return convertToDTO(sp); // Gọi hàm đã đổi tên
+            if (sp != null) {
+                setInventory(sp, em);
+            }
+            return sp;
         } finally {
             em.close();
         }
     }
 
     /**
-     * Thêm mới một SanPham vào DB
-     * @param sp Đối tượng SanPham cần chèn
-     * @return true nếu thành công
+     * Thêm mới sản phẩm
      */
     public boolean insert(SanPham sp) {
         EntityManager em = HypernateUtil.getEntityManager();
@@ -117,12 +111,11 @@ public class SanPhamDAO {
         try {
             tran.begin();
             em.persist(sp);
-            em.flush(); // Đảm bảo ID được tạo trước khi commit (nếu cần)
             tran.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             if (tran.isActive()) tran.rollback();
+            e.printStackTrace();
             return false;
         } finally {
             em.close();
@@ -130,9 +123,7 @@ public class SanPhamDAO {
     }
 
     /**
-     * Cập nhật SanPham trong DB
-     * @param sp Đối tượng SanPham đã thay đổi
-     * @return true nếu thành công
+     * Cập nhật sản phẩm
      */
     public boolean update(SanPham sp) {
         EntityManager em = HypernateUtil.getEntityManager();
@@ -143,8 +134,8 @@ public class SanPhamDAO {
             tran.commit();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             if (tran.isActive()) tran.rollback();
+            e.printStackTrace();
             return false;
         } finally {
             em.close();
@@ -152,60 +143,53 @@ public class SanPhamDAO {
     }
 
     /**
-     * Xóa SanPham theo ID
-     * @param id Mã sản phẩm cần xóa
-     * @return true nếu xóa thành công
+     * Xóa sản phẩm
      */
     public boolean delete(Long id) {
         EntityManager em = HypernateUtil.getEntityManager();
         EntityTransaction tran = em.getTransaction();
         try {
-            SanPham sp = em.find(SanPham.class, id);
-            if (sp == null) return false;
-            
             tran.begin();
-            // Lấy lại đối tượng trong transaction nếu nó bị detached
-            if (!em.contains(sp)) {
-                sp = em.merge(sp); 
+            SanPham sp = em.find(SanPham.class, id);
+            if (sp != null) {
+                em.remove(sp);
+                tran.commit();
+                return true;
             }
-            em.remove(sp);
-            tran.commit();
-            return true;
+            return false;
         } catch (Exception e) {
-            e.printStackTrace();
             if (tran.isActive()) tran.rollback();
+            e.printStackTrace();
             return false;
         } finally {
             em.close();
         }
     }
-
-    /**
-     * Cập nhật số lượng tồn của ChiTietSanPham
-     * @param maChiTietSP Mã chi tiết sản phẩm
-     * @param soLuongTon Số lượng tồn mới
-     * @return true nếu thành công
-     */
-    public boolean updateSoLuongTon(Long maChiTietSP, int soLuongTon) {
-        EntityManager em = HypernateUtil.getEntityManager();
-        EntityTransaction tran = em.getTransaction();
+ // Đếm tổng số lượng sản phẩm
+    public long countAll() {
+        EntityManager em = util.HypernateUtil.getEntityManager();
         try {
-            tran.begin();
-            ChiTietSanPham ctsp = em.find(ChiTietSanPham.class, maChiTietSP);
-            
-            if (ctsp == null) {
-                tran.rollback();
-                return false;
-            }
-            
-            ctsp.setSoLuongTon(soLuongTon);
-            em.merge(ctsp);
-            tran.commit();
-            return true;
+            String jpql = "SELECT COUNT(s) FROM SanPham s";
+            // Bước 1: Lấy kết quả dưới dạng Number
+            Object result = em.createQuery(jpql).getSingleResult();
+            // Bước 2: Ép kiểu an toàn về long
+            return (result != null) ? ((Number) result).longValue() : 0L;
         } catch (Exception e) {
             e.printStackTrace();
-            if (tran.isActive()) tran.rollback();
-            return false;
+            return 0L;
+        } finally {
+            em.close();
+        }
+    }
+
+    // Lấy 5 sản phẩm mới nhất dựa trên mã ID giảm dần
+    public List<SanPham> getTop5Latest() {
+        EntityManager em = util.HypernateUtil.getEntityManager();
+        try {
+            String jpql = "SELECT s FROM SanPham s ORDER BY s.maSanPham DESC";
+            return em.createQuery(jpql, SanPham.class)
+                     .setMaxResults(5)
+                     .getResultList();
         } finally {
             em.close();
         }
