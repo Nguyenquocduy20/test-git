@@ -32,41 +32,47 @@
         </tbody>
         
         <tfoot class="border-top">
-            <tr>
-                <td colspan="4" class="text-end fw-bold">Tổng tiền hàng:</td>
-                <td class="text-end fw-bold"><fmt:formatNumber value="${tongTienHang}" pattern="#,###"/>đ</td>
-            </tr>
+    <%-- 1. Dòng Tổng tiền hàng (trước khi giảm) --%>
+    <tr>
+        <td colspan="4" class="text-end fw-bold">Tổng tiền hàng:</td>
+        <td class="text-end fw-bold"><fmt:formatNumber value="${tongTienHang}" pattern="#,###"/>đ</td>
+    </tr>
 
-            <%-- ÁNH XẠ: CỨ 1 SẢN PHẨM GIẢM 10,000đ --%>
-            <c:set var="donGiaGiam" value="0" />
-            <c:choose>
-                <c:when test="${order.maKhuyenMai == 1}">
-                    <c:set var="donGiaGiam" value="10000" />
-                </c:when>
-                <c:when test="${order.maKhuyenMai == 2}">
-                    <c:set var="donGiaGiam" value="20000" />
-                </c:when>
-            </c:choose>
+    <%-- 2. Tính toán Logic giảm giá --%>
+    <c:set var="tongGiam" value="0" />
+    <c:choose>
+        <%-- Nếu mã KM là 1: Giảm 10% trên tổng tiền hàng --%>
+        <c:when test="${order.maKhuyenMai == 1}">
+            <c:set var="tongGiam" value="${tongTienHang * 0.1}" />
+        </c:when>
+        <%-- Nếu mã KM là 2: Giảm cố định 20,000đ --%>
+        <c:when test="${order.maKhuyenMai == 2}">
+            <c:set var="tongGiam" value="${tongTienHang * 0.2}" />
+        </c:when>
+    </c:choose>
 
-            <c:if test="${donGiaGiam > 0}">
-                <c:set var="tongGiam" value="${tongSoLuong * donGiaGiam}" />
-                <tr>
-                    <td colspan="4" class="text-end text-success fw-bold">
-                        Khuyến mãi (Giảm <fmt:formatNumber value="${donGiaGiam}" pattern="#,###"/>đ x ${tongSoLuong} sản phẩm):
-                    </td>
-                    <td class="text-end text-success fw-bold">
-                        - <fmt:formatNumber value="${tongGiam}" pattern="#,###"/>đ
-                    </td>
-                </tr>
-            </c:if>
+    <%-- 3. Hiển thị dòng Khuyến mãi nếu có --%>
+    <c:if test="${tongGiam > 0}">
+        <tr>
+            <td colspan="4" class="text-end text-success fw-bold">
+                Khuyến mãi:
+                <c:if test="${order.maKhuyenMai == 1}">(Giảm 10%)</c:if>
+                <c:if test="${order.maKhuyenMai == 2}">(Giảm 20%)</c:if>
+            </td>
+            <td class="text-end text-success fw-bold">
+                - <fmt:formatNumber value="${tongGiam}" pattern="#,###"/>đ
+            </td>
+        </tr>
+    </c:if>
 
-            <tr class="table-warning">
-                <td colspan="4" class="text-end fw-bold text-danger">TỔNG THANH TOÁN:</td>
-                <td class="text-end fw-bold text-danger fs-5">
-                    <%-- Kết quả sẽ là 650k - (2 sản phẩm * 10k) = 630k --%>
-                    <fmt:formatNumber value="${tongTienHang - (tongSoLuong * donGiaGiam)}" pattern="#,###"/>đ
-                </td>
-            </tr>
-        </tfoot>
+    <%-- 4. Dòng Tổng thanh toán cuối cùng (đã trừ giảm giá) --%>
+    <tr class="table-warning">
+        <td colspan="4" class="text-end fw-bold text-danger">TỔNG THANH TOÁN:</td>
+        <td class="text-end fw-bold text-danger fs-5">
+            <fmt:formatNumber value="${tongTienHang - tongGiam}" pattern="#,###"/>đ
+        </td>
+    </tr>
+</tfoot>
     </table>
+
 </div>
